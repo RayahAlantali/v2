@@ -1,4 +1,3 @@
-#Abridged from ECE4078 W3
 import numpy as np
 import math
 
@@ -6,8 +5,8 @@ def compute_distance_between_points(p1, p2):
     """ 
         Computes distance between two points
     """
-    dx = (p2[0] - p1[0])
-    dy = (p2[1] - p1[1])
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p1[1]
 
     return math.hypot(dx, dy)
 
