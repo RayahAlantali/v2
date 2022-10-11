@@ -82,15 +82,13 @@ class Operate:
             self.network_vis = np.ones((240, 320,3))* 100
             self.grid = cv2.imread('grid.png')
         self.bg = pygame.image.load('pics/gui_mask.jpg')
-
-        #M4 Initialisations
         self.robot_pose = [0,0,0]
         self.forward = False
         self.point_idx = 1
         self.waypoints = []
         self.wp = [0,0]
         self.min_dist = 50
-        self.wp_clicked = False
+        self.wp_click = False
         self.taglist = []
         self.P = np.zeros((3,3))
         self.marker_gt = np.zeros((2,10))
@@ -126,10 +124,6 @@ class Operate:
         self.control_clock = time.time()
         return drive_meas
     # camera control
-    def take_pic(self):
-        self.img = self.pibot.get_image()
-        if not self.data is None:
-            self.data.write_image(self.img)
 
     def detect_fruit_pos(self, dictionary):
         measurements = []
@@ -184,17 +178,6 @@ class Operate:
             self.file_output = (self.detector_output, self.ekf)
             # self.notification = f'{len(np.unique(self.detector_output))-1} target type(s) detected'
             self.notification = f'{pred_count} fruits detected'
-
-    # save raw images taken by the camera
-    def save_image(self):
-        f_ = os.path.join(self.folder, f'img_{self.image_id}.png')
-        if self.command['save_image']:
-            image = self.pibot.get_image()
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(f_, image)
-            self.image_id += 1
-            self.command['save_image'] = False
-            self.notification = f'{f_} is saved'
 
     # wheel and camera calibration for SLAM
     def init_ekf(self, datadir, ip):
@@ -297,7 +280,8 @@ class Operate:
                         fruit_true_pos = np.append(fruit_true_pos, [[x, y]], axis=0)
 
             return fruit_list, fruit_true_pos, aruco_true_pos
-    # paint the GUI
+
+    # Visual Display
     def draw(self, canvas):
         canvas.blit(self.bg, (0, 0))
         text_colour = (220, 220, 220)
@@ -312,28 +296,16 @@ class Operate:
         pink = pygame.Color(255,0,127)
         grey = pygame.Color(220,220,220)
 
-        # paint SLAM outputs
-        ekf_view = self.ekf.draw_slam_state(res=(320, 480+v_pad),
-            not_pause = self.ekf_on)
+        # EKF show
+        ekf_view = self.ekf.draw_slam_state(res=(320, 480+v_pad),not_pause = self.ekf_on)
         canvas.blit(ekf_view, (2*h_pad+320, v_pad))
         robot_view = cv2.resize(self.aruco_img, (320, 240))
-        self.draw_pygame_window(canvas, robot_view,
-                                position=(h_pad, v_pad)
-                                )
+        self.draw_pygame_window(canvas, robot_view,position=(h_pad, v_pad))
 
-        # # for target detector (M3)
-        # detector_view = cv2.resize(self.network_vis,
-        #                            (320, 240), cv2.INTER_NEAREST)
-        # self.draw_pygame_window(canvas, detector_view,
-        #                         position=(3*h_pad + 2*320, v_pad)
-        #                         )
+        # display grid
+        grid = cv2.resize(self.grid,(240, 240), cv2.INTER_NEAREST)
+        self.draw_pygame_window(canvas, grid,position=(h_pad, 240+2*v_pad))
 
-        # for grid (M4)
-        grid = cv2.resize(self.grid,
-                                   (240, 240), cv2.INTER_NEAREST)
-        self.draw_pygame_window(canvas, grid,
-                                position=(h_pad, 240+2*v_pad)
-                                )
         #Draw fruits and markers
         for i, fruit in enumerate(self.fruit_list):
             if fruit == 'apple':
@@ -350,7 +322,7 @@ class Operate:
             x = int(self.fruit_true_pos[i][0]*80 + 120)
             y = int(120 - self.fruit_true_pos[i][1]*80)
             if fruit not in self.search_list:
-                pygame.draw.circle(canvas, grey, (h_pad + x,240 + 2*v_pad + y),self.radius*80)
+                pygame.draw.circle(canvas, blue, (h_pad + x,240 + 2*v_pad + y),self.radius*80)
             else:
                 pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)
             pygame.draw.circle(canvas, colour, (h_pad + x,240 + 2*v_pad + y),4)
@@ -361,7 +333,7 @@ class Operate:
             pygame.draw.circle(canvas, grey, (h_pad + x,240 + 2*v_pad + y),self.radius*80)
             pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
 
-        #Drawing robot
+        #Display robot
         x = int(self.robot_pose[0]*80 + 120)
         y = int(120 - self.robot_pose[1]*80)
         x2 = int(x + 20*np.cos(self.robot_pose[2]))
@@ -369,22 +341,18 @@ class Operate:
         pygame.draw.rect(canvas, red, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
         pygame.draw.line(canvas, black, (h_pad + x,240 + 2*v_pad + y),(h_pad + x2,240 + 2*v_pad + y2))
 
-        #Draw waypoint
+        #Display waypoint
         x = int(self.wp[0]*80 + 120)
         y = int(120 - self.wp[1]*80)
         pygame.draw.line(canvas, red,(h_pad + x-5,240 + 2*v_pad + y-5), (h_pad + x + 5,240 + 2*v_pad + y + 5))
         pygame.draw.line(canvas, red,(h_pad + x + 5,240 + 2*v_pad + y-5), (h_pad + x - 5,240 + 2*v_pad + y + 5))
-        # pygame.draw.circle(canvas, red, (h_pad + x,240 + 2*v_pad + y),4)
 
-        # canvas.blit(self.gui_mask, (0, 0))
         self.put_caption(canvas, caption='SLAM', position=(2*h_pad+320, v_pad))
-        self.put_caption(canvas, caption='Waypoint clicker',
-                         position=(h_pad, 240+2*v_pad))
+        self.put_caption(canvas, caption='Waypoint clicker',position=(h_pad, 240+2*v_pad))
         self.put_caption(canvas, caption='PiBot Cam', position=(h_pad, v_pad))
         self.put_caption(canvas, caption='Detector', position=(3*h_pad + 2*320,v_pad))
 
-        notifiation = TEXT_FONT.render(self.notification,
-                                          False, text_colour)
+        notifiation = TEXT_FONT.render(self.notification, False, text_colour)
         canvas.blit(notifiation, (h_pad+10, 596))
 
         time_remain = self.count_down - time.time() + self.start_time
@@ -429,58 +397,15 @@ class Operate:
             # stop
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.command['motion'] = [0, 0]
-            # save image
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
-                self.command['save_image'] = True
-            # save SLAM map
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-                self.command['output'] = True
-            # reset SLAM map
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                if self.double_reset_comfirm == 0:
-                    self.notification = 'Press again to confirm CLEAR MAP'
-                    self.double_reset_comfirm +=1
-                elif self.double_reset_comfirm == 1:
-                    self.notification = 'SLAM Map is cleared'
-                    self.double_reset_comfirm = 0
-                    self.ekf.reset()
-            # run SLAM
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                n_observed_markers = len(self.ekf.taglist)
-                if not self.ekf_on:
-                    self.notification = 'SLAM is running'
-                    self.ekf_on = True
-                # if n_observed_markers == 0:
-                #     if not self.ekf_on:
-                #         self.notification = 'SLAM is running'
-                #         self.ekf_on = True
-                #     else:
-                #         self.notification = '> 2 landmarks is required for pausing'
-                # elif n_observed_markers < 3:
-                #     self.notification = '> 2 landmarks is required for pausing'
-                # else:
-                #     if not self.ekf_on:
-                #         self.request_recover_robot = True
-                #     self.ekf_on = not self.ekf_on
-                #     if self.ekf_on:
-                #         self.notification = 'SLAM is running'
-                #     else:
-                #         self.notification = 'SLAM is paused'
-            # run object detector
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                self.command['inference'] = True
-            # save object detection outputs
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_n:
-                self.command['save_inference'] = True
             # run auto fruit search
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if pos[0] > 20 and pos[0] < 260 and pos[1] > 320 and pos[1] < 560:
-                    wp_x = ((pos[0] - 20) - 120) / 80
-                    wp_y = (120 - (pos[1] - (240 + 2*40)))/80
+                    wp_x = (pos[0] - 140) / 80
+                    wp_y = (440 - pos[1])/80
                     self.wp = [wp_x,wp_y]
-                    self.wp_clicked = True
-                    print(f'Clicked waypoint, moving to {self.wp}')
+                    self.wp_click = True
+                    print(f'Selected waypoint, moving to {self.wp}')
             # quit
             elif event.type == pygame.QUIT:
                 self.quit = True
@@ -491,11 +416,15 @@ class Operate:
             sys.exit()
 
 
-    def turn_robot(self):
+    # Check pose and iterate direction of travel
+    def drive_robot(self):
         waypoint_x = self.wp[0]
         waypoint_y = self.wp[1]
         robot_x = self.robot_pose[0]
         robot_y = self.robot_pose[1]
+
+        self.distance = np.sqrt((waypoint_x-robot_x)**2 + (waypoint_y-robot_y)**2) #calculates distance between robot and waypoint
+
         robot_theta = self.robot_pose[2]
         waypoint_angle = np.arctan2((waypoint_y-robot_y),(waypoint_x-robot_x))
         theta1 = robot_theta - waypoint_angle
@@ -509,68 +438,57 @@ class Operate:
         else:
             self.theta_error = theta1
 
-
+        # Turn
         if self.forward == False:
-            #Update turning tick speed depending on theta_error to waypoint
             self.turning_tick = int(abs(5 * self.theta_error) + 3)
             print(f"Turning tick {self.turning_tick} with {self.theta_error}")
 
             if self.theta_error > 0:
                 self.command['motion'] = [0,-1]
-                self.notification = 'Robot is turning right'
+                self.notification = 'Robot turning right'
 
             if self.theta_error < 0:
                 self.command['motion'] = [0,1]
-                self.notification = 'Robot is turning left'
+                self.notification = 'Robot turning left'
 
-    def drive_robot(self):
-        waypoint_x = self.wp[0]
-        waypoint_y = self.wp[1]
-        robot_x = self.robot_pose[0]
-        robot_y = self.robot_pose[1]
-
-        self.distance = np.sqrt((waypoint_x-robot_x)**2 + (waypoint_y-robot_y)**2) #calculates distance between robot and waypoint
-
-        self.turn_robot() # turn robot
-
-        # stop turning if less than threshold
+        # Check angle error
         if not self.forward:
             if abs(self.theta_error)  < 0.05:
                 self.command['motion'] = [0,0]
                 self.notification = 'Robot stopped turning'
-                self.forward = True #go forward now
+                self.forward = True
                 return
 
-        #Driving forward
+        # Forwards
         if self.forward:
-            #Update tick speed depending on distance to waypoint
+            # Distance notification
             self.tick = int(10 * self.distance  + 30)
             print(f"Driving tick {self.tick} with {self.distance}")
 
-            #Checking if distance is increasing, stop driving
+            #Checking if getting closer to waypoint
             if self.distance > self.min_dist + 0.1:
                 self.command['motion'] = [0,0]
                 self.notification = 'Robot stopped moving'
                 self.forward = False
                 self.min_dist = 50
-                self.wp_clicked = False
+                self.wp_click = False
                 return
 
-            # Distance is decreasing
+            # If getting closer...
             else:
-                #Drive until goal arrived
-                distance_threshold = 0.05 #0.05
+                # Drive until in error margin
+                distance_threshold = 0.05
                 if self.distance < distance_threshold:
                     self.command['motion'] = [0,0]
                     self.notification = 'Robot arrived'
                     self.forward = False
                     self.min_dist = 50
-                    self.wp_clicked = False
+                    self.wp_click = False
                     return
 
                 else:
-                    #ReAdjust angle if theta_error increased
-                    if abs(self.theta_error) > 15/57.3 and self.distance > 0.15: #0.2
+                    # Check angle error
+                    if abs(self.theta_error) > 15/57.3 and self.distance > 0.15:
                         self.command['motion'] = [0,0]
                         self.notification = 'Readjusting angle'
                         self.forward = False
@@ -592,7 +510,6 @@ if __name__ == "__main__":
     parser.add_argument("--save_data", action='store_true')
     parser.add_argument("--play_data", action='store_true')
     parser.add_argument("--true_map", default="M4_true_map_3fruits.txt")
-    # parser.add_argument("--ckpt", default='network/scripts/model/model.best.pth')
     parser.add_argument("--ckpt", default='yolo-sim.pt')
     args, _ = parser.parse_known_args()
 
@@ -601,7 +518,6 @@ if __name__ == "__main__":
     TEXT_FONT = pygame.font.Font('pics/8-BitMadness.ttf', 40)
 
     width, height = 700, 660
-    # width, height = 700 + 400, 660
     canvas = pygame.display.set_mode((width, height))
     pygame.display.set_caption('ECE4078 2021 Lab')
     pygame.display.set_icon(pygame.image.load('pics/8bit/pibot5.png').convert())
@@ -630,24 +546,18 @@ if __name__ == "__main__":
 
     operate = Operate(args)
 
-    operate.notification = 'SLAM is running'
+    operate.notification = 'Waking up'
     operate.ekf_on = True
     while start:
         operate.update_keyboard()
-        operate.take_pic()
-        if operate.wp_clicked:
+        if operate.wp_click:
             operate.drive_robot()
         drive_meas = operate.control()
 
         operate.update_slam(drive_meas)
         operate.robot_pose = operate.ekf.robot.state
         operate.record_data()
-        operate.save_image()
         operate.detect_target()
-        # visualise
+        # Show graphics
         operate.draw(canvas)
         pygame.display.update()
-
-
-
-
