@@ -233,8 +233,6 @@ class EKF:
     def to_im_coor(xy, res, m2pixel):
         w, h = res
         x, y = xy
-        # x_im = int(-x*m2pixel+w/2.0)
-        # y_im = int(y*m2pixel+h/2.0)
         x_im = int(x*m2pixel+w/2.0)
         y_im = int(-y*m2pixel+h/2.0)
         return (x_im, y_im)
