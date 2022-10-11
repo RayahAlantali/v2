@@ -25,7 +25,6 @@ import slam.aruco_detector as aruco
 # import CV components
 sys.path.insert(0,"{}/network/".format(os.getcwd()))
 sys.path.insert(0,"{}/network/scripts".format(os.getcwd()))
-from network.scripts.detector import Detector
 
 # import path planning components for M4
 from path_planning.RRT import *
