@@ -400,18 +400,16 @@ class Operate:
             pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
 
         for i, fruit in enumerate(self.fruit_list):
-            fruit_case = str(fruit)
-            match fruit_case:
-                case 'apple':
-                    colour = red
-                case 'lemon':
-                    colour = yellow
-                case'orange':
-                    colour = orange
-                case 'pear':
-                    colour = green
-                case 'strawberry':
-                    colour = magenta
+            if fruit == 'apple':
+                colour = red
+            elif fruit == 'lemon':
+                colour = yellow
+            elif fruit == 'orange':
+                colour = orange
+            elif fruit == 'pear':
+                colour = green
+            elif fruit == 'strawberry':
+                colour = magenta
 
             x = int(self.fruit_true_pos[i][0]*80 + 120)
             y = int(120 - self.fruit_true_pos[i][1]*80)
