@@ -1,4 +1,3 @@
-# teleoperate the robot, perform SLAM and object detection
 
 # basic python packages
 import numpy as np
@@ -68,10 +67,10 @@ class Operate:
         self.image_id = 0
         self.pred_count = 0
         self.notification = 'Press ENTER to start SLAM'
-        # a 5min timer
+        #SEtting a timwe for 5 minutes
         self.count_down = 300
         self.start_time = time.time()
-        self.control_clock = time.time()
+        self.clock = time.time()
         # initialise images
         self.img = np.zeros([240,320,3], dtype=np.uint8)
         self.aruco_img = np.zeros([240,320,3], dtype=np.uint8)
@@ -84,9 +83,9 @@ class Operate:
             self.network_vis = np.ones((240, 320,3))* 100
             self.grid = cv2.imread('grid.png')
         self.bg = pygame.image.load('pics/gui_mask.jpg')
-
-        #M4 Initialisations
-        self.robot_pose = [0,0,0]
+        #Initialisng paramaters and arrays to be used
+        self.robot_pose = np.array([0,0,0])
+        self.paths = [[[0,0],[0.5,0.5]],[[0.5,0.5],[1,1]],[[1,1],[1,0.5]]]
         self.forward = False
         self.point_idx = 1
         self.waypoints = []
@@ -94,26 +93,24 @@ class Operate:
         self.min_dist = 50
         self.auto_path = False
         self.taglist = []
+        #Defining parameters for SLAM
         self.P = np.zeros((3,3))
-        self.marker_gt = np.zeros((2,10))
-        self.init_lm_cov = 1e-6 #1e-4
-        self.paths = [[[0,0],[0.5,0.5]],[[0.5,0.5],[1,1]],[[1,1],[1,0.5]]]
+        self.marker_pos = np.zeros((2,10))
+        self.lmc = 1e-6
         self.path_idx = 0
 
-        #control
+        #Contorl and travel parameters
         self.tick = 30
         self.turning_tick = 5
-
-        #Path planning
-        self.boundary = 0.25
+        self.boundary = 0.22
 
         #Add known markers and fruits from map to SLAM
         self.fruit_list, self.fruit_true_pos, self.aruco_true_pos = self.read_true_map(args.true_map)
-        self.marker_gt = np.zeros((2,len(self.aruco_true_pos) + len(self.fruit_true_pos)))
-        self.marker_gt, self.taglist, self.P = self.parse_slam_map(self.fruit_list, self.fruit_true_pos, self.aruco_true_pos)
-        self.ekf.load_map(self.marker_gt, self.taglist, self.P)
+        self.marker_pos = np.zeros((2,len(self.aruco_true_pos) + len(self.fruit_true_pos)))
+        self.marker_pos, self.taglist, self.P = self.parse_slam_map(self.fruit_list, self.fruit_true_pos, self.aruco_true_pos)
+        self.ekf.load_map(self.marker_pos, self.taglist, self.P)
 
-        #Generating paths from search list
+        #Creating paths from the know search_liat
         self.search_list = self.read_search_list()
         print(f'Fruit search order: {self.search_list}')
         self.generate_paths()
@@ -127,9 +124,9 @@ class Operate:
                 self.command['motion'], self.tick, self.turning_tick)
         if not self.data is None:
             self.data.write_keyboard(lv, rv)
-        dt = time.time() - self.control_clock
+        dt = time.time() - self.clock
         drive_meas = measure.Drive(lv, rv, dt)
-        self.control_clock = time.time()
+        self.clock = time.time()
         return drive_meas
     # camera control
     def take_pic(self):
@@ -147,14 +144,11 @@ class Operate:
         return measurements
 
     def read_search_list(self):
-        """Read the search order of the target fruits
-
-        @return: search order of the target fruits
+        """Function reads the order of the target fruits returnf the target fruits in order
         """
         search_list = []
         with open('search_list.txt', 'r') as fd:
             fruits = fd.readlines()
-
             for fruit in fruits:
                 search_list.append(fruit.strip())
 
@@ -167,12 +161,12 @@ class Operate:
         search_fruits = [fruit_list_dict[x] for x in self.search_list]
         other_fruits = list((set(all_fruits) | set(search_fruits)) - (set(all_fruits) & set(search_fruits)))
 
-        #adding markers as obstacles
+        #Putting in the Markers
         obstacles = []
         for x,y in self.aruco_true_pos:
             obstacles.append([x + 1.5, y + 1.5])
 
-        #adding other fruits as obstacles
+        #Making the other fruits obstacles
         for idx in other_fruits:
             x,y = self.fruit_true_pos[idx]
             obstacles.append([x + 1.5, y + 1.5])
@@ -273,7 +267,7 @@ class Operate:
             json.dump(box_list, f)
             self.pred_count += 1
 
-    # save SLAM map
+    # save the SLAM map
     def record_data(self):
         if self.command['output']:
             self.output.write_map(self.ekf)
@@ -293,28 +287,28 @@ class Operate:
 
     def parse_slam_map(self, fruit_list, fruits_true_pos, aruco_true_pos):
 
-        #adding known aruco markers
-        for (i, pos) in enumerate(aruco_true_pos):
+        #Aruco Markers
+        for i, pos in enumerate(aruco_true_pos):
             self.taglist.append(i + 1)
-            self.marker_gt[0][i] = pos[0]
-            self.marker_gt[1][i] = pos[1]
-
+            self.marker_pos[0][i] = pos[0]
+            self.marker_pos[1][i] = pos[1]
+            #Adding to the covariance matrix
             self.P = np.concatenate((self.P, np.zeros((2, self.P.shape[1]))), axis=0)
             self.P = np.concatenate((self.P, np.zeros((self.P.shape[0], 2))), axis=1)
-            self.P[-2,-2] = self.init_lm_cov**2
-            self.P[-1,-1] = self.init_lm_cov**2
+            self.P[-2,-2] = self.lmc**2
+            self.P[-1,-1] = self.lmc**2
 
-        #adding known fruits
-        for (i,pos) in enumerate(fruits_true_pos):
+        #Known Fruits
+        for i,pos in enumerate(fruits_true_pos):
             self.taglist.append(fruit_list[i]) #adding tag
-            self.marker_gt[0][i + 10] = pos[0]
-            self.marker_gt[1][i + 10] = pos[1]
-
+            self.marker_pos[0][i + 10] = pos[0]
+            self.marker_pos[1][i + 10] = pos[1]
+            #Adding it to the covariance matrix
             self.P = np.concatenate((self.P, np.zeros((2, self.P.shape[1]))), axis=0)
             self.P = np.concatenate((self.P, np.zeros((self.P.shape[0], 2))), axis=1)
-            self.P[-2,-2] = self.init_lm_cov**2
-            self.P[-1,-1] = self.init_lm_cov**2
-        return self.marker_gt, self.taglist, self.P
+            self.P[-2,-2] = self.lmc**2
+            self.P[-1,-1] = self.lmc**2
+        return self.marker_pos, self.taglist, self.P
 
     def read_true_map(self,fname):
         """Read the ground truth map and output the pose of the ArUco markers and 3 types of target fruit to search
@@ -365,40 +359,31 @@ class Operate:
         canvas.blit(ekf_view, (h_pad,2*v_pad+240))
         robot_view = cv2.resize(self.aruco_img, (320, 240))
         self.draw_pygame_window(canvas, robot_view,
-                                position=(h_pad, v_pad)
-                                )
+                                position=(h_pad, v_pad))
 
-        # # for target detector (M3)
-        # detector_view = cv2.resize(self.network_vis,
-        #                            (320, 240), cv2.INTER_NEAREST)
-        # self.draw_pygame_window(canvas, detector_view,
-        #                         position=(3*h_pad + 2*320, v_pad)
-        #                         )
-
-        # Using a grid image as the interface for wayoints
+        # Using a grid image as the interface for waypoints
         gui_grid = cv2.resize(self.grid,
                                    (320, 480), cv2.INTER_NEAREST)
         self.draw_pygame_window(canvas, gui_grid,
-                                position=(2*h_pad+320, v_pad)
-                                )
+                                position=(2*h_pad+320, v_pad))
         #Defining colours to use for the GUI
+        black = pygame.Color(0,0,0)
         red = pygame.Color(255,0,0)
         blue = pygame.Color(0,0,255)
         green = pygame.Color(102,204,0)
         yellow = pygame.Color(255,255,0)
-        black = pygame.Color(0,0,0)
         orange = pygame.Color(255,165,0)
         magenta = pygame.Color(255,0,255)
         grey = pygame.Color(220,220,220)
         purple = pygame.Color(128,0,128)
 
-        #Painting Markers and the fruits on the 
+        #Painting Marker positions on the grid
         for marker in self.aruco_true_pos:
-            x = int(marker[0]*80 + 120)
-            y = int(120 - marker[1]*80)
+            x = int(160+marker[0]*80 )
+            y = int(160 - marker[1]*80)
             pygame.draw.circle(canvas, purple, (2*h_pad+320 + x,v_pad + y),self.boundary*80,0)
             pygame.draw.rect(canvas, black, (2*h_pad+320 + x - 5,v_pad + y - 5,10,10))
-
+        #Painting the fruits on the grid
         for i, fruit in enumerate(self.fruit_list):
             if fruit == 'apple':
                 colour = red
@@ -411,8 +396,8 @@ class Operate:
             elif fruit == 'strawberry':
                 colour = magenta
 
-            x = int(self.fruit_true_pos[i][0]*80 + 120)
-            y = int(120 - self.fruit_true_pos[i][1]*80)
+            x = int(160+self.fruit_true_pos[i][0]*80)
+            y = int(240 - self.fruit_true_pos[i][1]*80)
             #Drawing the current fruit in the list
             pygame.draw.circle(canvas, colour, (2*h_pad+320 + x,v_pad + y),4)
             if fruit not in self.search_list:
@@ -428,7 +413,7 @@ class Operate:
         pygame.draw.rect(canvas, blue, (2*h_pad+320 + x - 5,v_pad + y - 5,10,10))
         pygame.draw.line(canvas, black, (2*h_pad+320 + x,240 + 2*v_pad + y),(2*h_pad +320+ x2,v_pad + y2))
 
-        #Draw waypoint
+        #Draw the waypoint
         x = int(self.wp[0]*80 + 120)
         y = int(120 - self.wp[1]*80)
         pygame.draw.line(canvas, red,(2*h_pad+320 + x-5,v_pad + y-5), (2*h_pad+320 + x + 5,v_pad + y + 5))
@@ -443,10 +428,10 @@ class Operate:
                 y2 = int(120 - path[i+1][1]*80)
                 pygame.draw.line(canvas, blue, (2*h_pad+320 + x,v_pad + y),(2*h_pad+320 + x2,v_pad + y2))
 
-        # canvas.blit(self.gui_mask, (0, 0))
-        self.put_caption(canvas, caption='SLAM', position=(h_pad+320, 2*v_pad))
+
         self.put_caption(canvas, caption='Grid Map',
                          position=(2*h_pad+320, v_pad))
+        self.put_caption(canvas, caption='SLAM', position=(h_pad, 2*v_pad))
         self.put_caption(canvas, caption='PiBot Cam', position=(h_pad, v_pad))
         self.put_caption(canvas, caption='Detector', position=(3*h_pad + 2*320,v_pad))
 
@@ -458,7 +443,7 @@ class Operate:
         if time_remain > 0:
             time_remain = f'Count Down: {time_remain:03.0f}s'
         elif int(time_remain)%2 == 0:
-            time_remain = "Time Is Up !!!"
+            time_remain = "Time Up !!"
         else:
             time_remain = ""
         count_down_surface = TEXT_FONT.render(time_remain, False, (50, 50, 50))
@@ -582,13 +567,13 @@ class Operate:
                     if self.point_idx == len(self.waypoints) - 1: #reached last wp of path
                         if self.path_idx == len(self.paths) - 1: #stop pathing
                             self.auto_path = False
-                        else: #Increment path
+                        else: #Increment path and reset idx
                             self.path_idx += 1
                             self.waypoints = self.paths[self.path_idx]
-                            self.point_idx = 1 #reset point
+                            self.point_idx = 1 
                             self.wp = self.waypoints[self.point_idx]
                         self.pibot.set_velocity([0,0],time = 3)
-                    else: #move to next point
+                    else:
                         self.point_idx += 1
                         self.wp = self.waypoints[self.point_idx]
                     print(f"Moving to new waypoint {self.wp}")

@@ -1,4 +1,3 @@
-# teleoperate the robot, perform SLAM and object detection
 
 # basic python packages
 import numpy as np
@@ -66,10 +65,10 @@ class Operate:
         self.image_id = 0
         self.pred_count = 0
         self.notification = 'Press ENTER to start SLAM'
-        # a 5min timer
+        #Setting a timer for 5 minutes
         self.count_down = 300
         self.start_time = time.time()
-        self.control_clock = time.time()
+        self.clock = time.time()
         # initialise images
         self.img = np.zeros([240,320,3], dtype=np.uint8)
         self.aruco_img = np.zeros([240,320,3], dtype=np.uint8)
@@ -82,7 +81,8 @@ class Operate:
             self.network_vis = np.ones((240, 320,3))* 100
             self.grid = cv2.imread('grid.png')
         self.bg = pygame.image.load('pics/gui_mask.jpg')
-        self.robot_pose = [0,0,0]
+        #Initialisng paramaters and arrays to be used
+        self.robot_pose = np.array([0,0,0])
         self.forward = False
         self.point_idx = 1
         self.waypoints = []
@@ -93,12 +93,11 @@ class Operate:
         self.P = np.zeros((3,3))
         self.marker_gt = np.zeros((2,10))
         self.init_lm_cov = 1e-4
-        #control
+
+        #Contorl and travel parameters
         self.tick = 30
         self.turning_tick = 5
-
-        #Path planning
-        self.radius = 0.25
+        self.boundary = 0.22
 
         #Add known markers and fruits from map to SLAM
         self.fruit_list, self.fruit_true_pos, self.aruco_true_pos = self.read_true_map(args.true_map)
@@ -119,9 +118,9 @@ class Operate:
                 self.command['motion'], self.tick, self.turning_tick)
         if not self.data is None:
             self.data.write_keyboard(lv, rv)
-        dt = time.time() - self.control_clock
+        dt = time.time() - self.clock
         drive_meas = measure.Drive(lv, rv, dt)
-        self.control_clock = time.time()
+        self.clock = time.time()
         return drive_meas
     # camera control
     def take_pic(self):
@@ -140,14 +139,11 @@ class Operate:
         return measurements
 
     def read_search_list(self):
-        """Read the search order of the target fruits
-
-        @return: search order of the target fruits
+        """Function reads the order of the target fruits returnf the target fruits in order
         """
         search_list = []
         with open('search_list.txt', 'r') as fd:
             fruits = fd.readlines()
-
             for fruit in fruits:
                 search_list.append(fruit.strip())
 
@@ -296,21 +292,13 @@ class Operate:
 
             return fruit_list, fruit_true_pos, aruco_true_pos
 
-    # Visual Display
+    # Paint the GUI
     def draw(self, canvas):
         canvas.blit(self.bg, (0, 0))
         text_colour = (220, 220, 220)
         v_pad = 40
         h_pad = 20
-        red = pygame.Color(255,0,0)
-        blue = pygame.Color(0,0,255)
-        green = pygame.Color(102,204,0)
-        yellow = pygame.Color(255,255,0)
-        black = pygame.Color(0,0,0)
-        orange = pygame.Color(255,165,0)
-        pink = pygame.Color(255,0,127)
-        grey = pygame.Color(220,220,220)
-
+  
         # EKF show
         ekf_view = self.ekf.draw_slam_state(res=(320, 480+v_pad),not_pause = self.ekf_on)
         canvas.blit(ekf_view, (2*h_pad+320, v_pad))
@@ -320,8 +308,25 @@ class Operate:
         # display grid
         grid = cv2.resize(self.grid,(240, 240), cv2.INTER_NEAREST)
         self.draw_pygame_window(canvas, grid,position=(h_pad, 240+2*v_pad))
+       #Defining colours to use for the GUI
+        black = pygame.Color(0,0,0)
+        red = pygame.Color(255,0,0)
+        blue = pygame.Color(0,0,255)
+        green = pygame.Color(102,204,0)
+        yellow = pygame.Color(255,255,0)
+        orange = pygame.Color(255,165,0)
+        magenta = pygame.Color(255,0,255)
+        grey = pygame.Color(220,220,220)
+        purple = pygame.Color(128,0,128)
 
-        #Draw fruits and markers
+        #Painting Marker positions on the grid
+        for marker in self.aruco_true_pos:
+            x = int(marker[0]*80 + 120)
+            y = int(120 - marker[1]*80)
+            pygame.draw.circle(canvas, purple, (h_pad + x,240 + 2*v_pad + y),self.boundary*80,0)
+            pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
+
+        #Painting the fruits on the grid
         for i, fruit in enumerate(self.fruit_list):
             if fruit == 'apple':
                 colour = red
@@ -329,24 +334,18 @@ class Operate:
                 colour = yellow
             elif fruit == 'orange':
                 colour = orange
-            elif fruit == 'strawberry':
-                colour = pink
             elif fruit == 'pear':
                 colour = green
+            elif fruit == 'strawberry':
+                colour = magenta
 
             x = int(self.fruit_true_pos[i][0]*80 + 120)
             y = int(120 - self.fruit_true_pos[i][1]*80)
             if fruit not in self.search_list:
-                pygame.draw.circle(canvas, blue, (h_pad + x,240 + 2*v_pad + y),self.radius*80)
+                pygame.draw.circle(canvas, blue, (h_pad + x,240 + 2*v_pad + y),self.boundary*80)
             else:
                 pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)
             pygame.draw.circle(canvas, colour, (h_pad + x,240 + 2*v_pad + y),4)
-
-        for marker in self.aruco_true_pos:
-            x = int(marker[0]*80 + 120)
-            y = int(120 - marker[1]*80)
-            pygame.draw.circle(canvas, grey, (h_pad + x,240 + 2*v_pad + y),self.radius*80)
-            pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
 
         #Display robot
         x = int(self.robot_pose[0]*80 + 120)
