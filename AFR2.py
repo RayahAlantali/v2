@@ -383,13 +383,13 @@ class Operate:
         #                         position=(3*h_pad + 2*320, v_pad)
         #                         )
 
-        # for grid (M4)
+        # Making a GUI for going from point to point
         grid = cv2.resize(self.grid,
                                    (240, 240), cv2.INTER_NEAREST)
         self.draw_pygame_window(canvas, grid,
                                 position=(h_pad, 240+2*v_pad)
                                 )
-        #Draw fruits and markers
+        #Painting MArkers and the fruits on the 
         for i, fruit in enumerate(self.fruit_list):
             if fruit == 'apple':
                 colour = red
@@ -440,9 +440,9 @@ class Operate:
                 pygame.draw.line(canvas, blue, (h_pad + x,240 + 2*v_pad + y),(h_pad + x2,240 + 2*v_pad + y2))
 
         # canvas.blit(self.gui_mask, (0, 0))
-        self.put_caption(canvas, caption='SLAM', position=(2*h_pad+320, v_pad))
-        self.put_caption(canvas, caption='Waypoint clicker',
-                         position=(h_pad, 240+2*v_pad))
+        self.put_caption(canvas, caption='SLAM', position=(h_pad+320, 2*v_pad))
+        self.put_caption(canvas, caption='Grid Map',
+                         position=(2*h_pad+320, v_pad))
         self.put_caption(canvas, caption='PiBot Cam', position=(h_pad, v_pad))
         self.put_caption(canvas, caption='Detector', position=(3*h_pad + 2*320,v_pad))
 
@@ -512,6 +512,8 @@ class Operate:
     def drive_robot(self):
         waypoint_x = self.wp[0]
         waypoint_y = self.wp[1]
+        #Updating the robots psoe
+        self.robot_pose = self.ekf.get_state_vector()
         robot_x = self.robot_pose[0]
         robot_y = self.robot_pose[1]
 
