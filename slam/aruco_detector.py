@@ -21,7 +21,6 @@ class aruco_detector:
             img, self.aruco_dict, parameters=self.aruco_params)
         rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
             corners, self.marker_length, self.camera_matrix, self.distortion_params)
-        # rvecs, tvecs = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_length, self.camera_matrix, self.distortion_params) # use this instead if you got a value error
 
         if ids is None:
             return [], img
@@ -29,7 +28,6 @@ class aruco_detector:
         # Compute the marker positions
         measurements = []
         seen_ids = []
-
         for i in range(len(ids)):
             idi = ids[i,0]
             # Some markers appear multiple times but should only be handled once.
@@ -38,20 +36,11 @@ class aruco_detector:
             else:
                 seen_ids.append(idi)
 
-            # sys.path.append(".")
-            # import auto_fruit_search
-            # a,b, aruco = auto_fruit_search.read_true_map("M4_true_map.txt")
-            # coordinate = np.array([[aruco[idi-1][0]],[aruco[idi-1][1]]])
-
-            # lm_measurement = measure.Marker(coordinate, idi)
-
             lm_tvecs = tvecs[ids==idi].T
             lm_bff2d = np.block([[lm_tvecs[2,:]],[-lm_tvecs[0,:]]])
             lm_bff2d = np.mean(lm_bff2d, axis=1).reshape(-1,1)
 
             lm_measurement = measure.Marker(lm_bff2d, idi)
-
-
             measurements.append(lm_measurement)
 
         # Draw markers on image copy
