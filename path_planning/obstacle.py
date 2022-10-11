@@ -1,12 +1,14 @@
+# Abridged from ECE4078 Practical W3
 import numpy as np
 from path_planning.math_functions import *
+
 
 
 class Polygon:
     """
     Obstacles are represented as polygons
     Polygons are defined as an array with n rows (vertices) and 2 columns
-
+    
     """
 
     def __init__(self, vertices=np.zeros((4,2))):
@@ -16,7 +18,7 @@ class Polygon:
     def compute_distance_point_to_polygon(self, point_q, ccw):
         """
         Compute distance from point_q to the closest point in the polygon
-
+        
         Method returns:
         - dist: minimal distance from point_q to polygon
         - indices of segment closest to point_q
@@ -62,7 +64,7 @@ class Polygon:
 
         """
         Determines the unit-length vector tangent at point_q to the polygon
-
+        
         Method returns:
            tangent vector
 
