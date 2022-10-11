@@ -390,7 +390,7 @@ class Operate:
         orange = pygame.Color(255,165,0)
         magenta = pygame.Color(255,0,255)
         grey = pygame.Color(220,220,220)
-        purple = pygame.Colour(128,0,128)
+        purple = pygame.Color(128,0,128)
 
         #Painting Markers and the fruits on the 
         for marker in self.aruco_true_pos:
@@ -400,18 +400,16 @@ class Operate:
             pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
 
         for i, fruit in enumerate(self.fruit_list):
-            fruit_case = str(fruit)
-            match fruit_case:
-                case 'apple':
-                    colour = red
-                case 'lemon':
-                    colour = yellow
-                case'orange':
-                    colour = orange
-                case 'pear':
-                    colour = green
-                case 'strawberry':
-                    colour = magenta
+            if fruit == 'apple':
+                colour = red
+            elif fruit == 'lemon':
+                colour = yellow
+            elif fruit == 'orange':
+                colour = orange
+            elif fruit == 'pear':
+                colour = green
+            elif fruit == 'strawberry':
+                colour = magenta
 
             x = int(self.fruit_true_pos[i][0]*80 + 120)
             y = int(120 - self.fruit_true_pos[i][1]*80)
