@@ -19,7 +19,6 @@ if __name__ == '__main__':
     p = np.ones((8,2)) * -1
     idx = 0
 
-    
     # pick points
     def onclick(event):
         global p, idx
@@ -69,7 +68,3 @@ if __name__ == '__main__':
     print("\nIntrinsic parameters:\n", camera.K)
     fileNameI = "{}intrinsic.txt".format(dataDir)
     np.savetxt(fileNameI, camera.K, delimiter=',')
-    
-    # extrinsic parameters
-    # print("\nExtrinsic parameters:\n", repr(camera.pose))
-

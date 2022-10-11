@@ -29,17 +29,18 @@ class calibration:
     def update_keyboard(self):
         for event in pygame.event.get():
             ########### replace with your M1 codes ###########
+            # drive forward
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                self.command['motion'] = [1, 0]
+                pass # TODO: replace with your M1 code to make the robot drive forward
             # drive backward
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                self.command['motion'] = [-1, 0]
+                pass # TODO: replace with your M1 code to make the robot drive backward
             # turn left
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                self.command['motion'] = [0, 1]
+                pass # TODO: replace with your M1 code to make the robot turn left
             # drive right
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                self.command['motion'] = [0, -1]
+                pass # TODO: replace with your M1 code to make the robot turn right
             ####################################################
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.command['motion'] = [0, 0]
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     dataDir = "{}/param/".format(currentDir)
     if not os.path.exists(dataDir):
         os.makedirs(dataDir)
-
+    
     images_to_collect = 1
 
     calib = calibration(args)
@@ -75,12 +76,12 @@ if __name__ == "__main__":
     pygame.display.set_caption('Calibration')
     canvas.fill((0, 0, 0))
     pygame.display.update()
-
+    
     # collect data
     print('Collecting {} images for camera calibration.'.format(images_to_collect))
     print('Press ENTER to capture image.')
     while not calib.finish:
-
+        
         calib.update_keyboard()
         calib.control()
         calib.take_pic()
