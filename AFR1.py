@@ -565,6 +565,7 @@ if __name__ == "__main__":
     operate.ekf_on = True
     while start:
         operate.update_keyboard()
+        operate.take_pic()
         if operate.wp_click:
             operate.drive_robot()
         drive_meas = operate.control()
@@ -572,6 +573,7 @@ if __name__ == "__main__":
         operate.update_slam(drive_meas)
         operate.robot_pose = operate.ekf.robot.state
         operate.record_data()
+        operate.save_image()
         operate.detect_target()
         # Show graphics
         operate.draw(canvas)
