@@ -363,7 +363,7 @@ class Operate:
         pygame.draw.line(canvas, red,(h_pad + x + 5,240 + 2*v_pad + y-5), (h_pad + x - 5,240 + 2*v_pad + y + 5))
 
         self.put_caption(canvas, caption='SLAM', position=(2*h_pad+320, v_pad))
-        self.put_caption(canvas, caption='Waypoint clicker',position=(h_pad, 240+2*v_pad))
+        self.put_caption(canvas, caption='Grid Map',position=(h_pad, 240+2*v_pad))
         self.put_caption(canvas, caption='PiBot Cam', position=(h_pad, v_pad))
         self.put_caption(canvas, caption='Detector', position=(3*h_pad + 2*320,v_pad))
 
