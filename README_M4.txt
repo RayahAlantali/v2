@@ -13,5 +13,8 @@ roslaunch penguinpi_gazebo ECE4078.launch
 8. source ~/LiveDemo/catkin_ws/devel/setup.bash
 rosrun penguinpi_gazebo scene_manager.py -l M4_true_map_3fruits.txt
 
-9. python3 AFR2.py
-10. Press g to run 
+9a. python3 AFR2.py
+10a. Press g to run 
+
+9b. python3 AFR1.py
+10b. click on map
