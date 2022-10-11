@@ -139,13 +139,15 @@ class EKF:
 
         # TODO: add your codes here to compute the updated x
         #Compute Kalman Gain
-        S = H @ self.P @ H.T + R
+        S = H @ self.P @ H.T + R #+ 0.01*np.eye(R.shape[0])
         K = self.P @ H.T @ np.linalg.inv(S)
-        #Adjusting the state
+
+        #Correct state
         y = z - z_hat
         x = x + K @ y
-        #Setting state estimate and covariance
         self.set_state_vector(x)
+
+        #Correct covariance
         self.P = (np.eye(x.shape[0]) - K @ H) @ self.P
 
     def state_transition(self, raw_drive_meas):
