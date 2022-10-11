@@ -64,4 +64,3 @@ class MappingUtils:
 
         armse = np.sqrt( 1.0/n * np.sum(errors**2) )
         return armse, R, t
-

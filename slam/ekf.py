@@ -97,23 +97,23 @@ class EKF:
 
     # the prediction step of EKF
     def predict(self, raw_drive_meas):
-
-#         F = self.state_transition(raw_drive_meas)
-#         x = self.get_state_vector()
-
-        # TODO: add your codes here to compute the predicted x
-
-        # compute robot's state given the control input
         self.robot.drive(raw_drive_meas)
+        F = self.state_transition(raw_drive_meas)
+        x = self.get_state_vector()
 
-        # Get A using state_transition() calculate Jacobian of dynamics
-        A = self.state_transition(raw_drive_meas)
-
-        # Get Q using predict_covariance() calculate covariance matrix for dynamics model
+        # TODO: add your codes here to compute the predicted drive
+        #Robot is going in a straight line
         Q = self.predict_covariance(raw_drive_meas)
 
-        # Update robot's uncertainty and update robot's state
-        self.P = A @ self.P @ A.T + Q
+        self.P = F @ self.P @ F.T + Q
+        #if raw_drive_meas.left_speed==raw_drive_meas.right_speed:
+        #    self.P = F @ self.P @F.T +0.5*Q
+        if (np.absolute(x[0])<0.01 and np.absolute(x[1])<0.01):
+            self.P=self.P * 0.5
+        #Robot is turning hence more uncertainty
+        #else:
+        #0.5*Q
+        #self.P = self.P*0.5
 
     # the update step of EKF
     def update(self, measurements):
