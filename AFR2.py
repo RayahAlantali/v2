@@ -196,7 +196,7 @@ class Operate:
 
             rrtc = RRT(start=start, goal=goal, width=3, height=3, obstacle_list=all_obstacles,
                     expand_dis=1, path_resolution=0.5)
-            path = rrtc.planning()[::-1] #reverse path
+            path = rrtc.planning()[::] #reverse path
 
             #printing path
             for i in range(len(path)):
