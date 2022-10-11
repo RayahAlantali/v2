@@ -1,0 +1,21 @@
+<robot name="spam">
+  <link name="spam">
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="0.6" />
+      <inertia  ixx="0.00018" ixy="0.0"  ixz="0.0"  iyy="0.000521"  iyz="0.0"  izz="0.000701" />
+    </inertial>
+    <visual>
+      <origin xyz="0.0 0 0.0"/>
+      <geometry>
+        <mesh filename="package://apclab_description/meshes/spam/textured.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0 0.0"/>
+      <geometry>
+        <box size="0.1021 0.06 0.0835"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
