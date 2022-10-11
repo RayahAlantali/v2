@@ -1,3 +1,5 @@
+# Abridged from ECE4078 Practical W3
+
 import numpy as np
 from path_planning.math_functions import *
 
