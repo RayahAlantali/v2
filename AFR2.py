@@ -400,7 +400,8 @@ class Operate:
             pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
 
         for i, fruit in enumerate(self.fruit_list):
-            match str(fruit):
+            fruit_case = str(fruit)
+            match fruit_case:
                 case 'apple':
                     colour = red
                 case 'lemon':
