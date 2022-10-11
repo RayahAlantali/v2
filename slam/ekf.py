@@ -108,8 +108,8 @@ class EKF:
         self.P = F @ self.P @ F.T + Q
         #if raw_drive_meas.left_speed==raw_drive_meas.right_speed:
         #    self.P = F @ self.P @F.T +0.5*Q
-        if (np.absolute(x[0])<0.01 and np.absolute(x[1])<0.01):
-            self.P=self.P * 0.5
+        #if (np.absolute(x[0])<0.01 and np.absolute(x[1])<0.01):
+        #    self.P=self.P * 0.5
         #Robot is turning hence more uncertainty
         #else:
         #0.5*Q
