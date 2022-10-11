@@ -105,7 +105,7 @@ class Operate:
         self.turning_tick = 5
 
         #Path planning
-        self.radius = 0.25
+        self.boundary = 0.25
 
         #Add known markers and fruits from map to SLAM
         self.fruit_list, self.fruit_true_pos, self.aruco_true_pos = self.read_true_map(args.true_map)
@@ -177,7 +177,7 @@ class Operate:
             x,y = self.fruit_true_pos[idx]
             obstacles.append([x + 1.5, y + 1.5])
 
-        all_obstacles = generate_path_obstacles(obstacles, self.radius) #generating obstacles
+        all_obstacles = generate_path_obstacles(obstacles, self.boundary) #generating obstacles
 
         #starting robot pose and empty paths
         start = np.array([0,0]) + 1.5
@@ -358,15 +358,7 @@ class Operate:
         text_colour = (220, 220, 220)
         v_pad = 40
         h_pad = 20
-        red = pygame.Color(255,0,0)
-        blue = pygame.Color(0,0,255)
-        green = pygame.Color(102,204,0)
-        yellow = pygame.Color(255,255,0)
-        black = pygame.Color(0,0,0)
-        orange = pygame.Color(255,165,0)
-        pink = pygame.Color(255,0,127)
-        grey = pygame.Color(220,220,220)
-
+ 
         # paint SLAM outputs
         ekf_view = self.ekf.draw_slam_state(res=(240, 240+v_pad),
             not_pause = self.ekf_on)
@@ -383,45 +375,58 @@ class Operate:
         #                         position=(3*h_pad + 2*320, v_pad)
         #                         )
 
-        # Making a GUI for going from point to point
-        grid = cv2.resize(self.grid,
+        # Using a grid image as the interface for wayoints
+        gui_grid = cv2.resize(self.grid,
                                    (320, 480), cv2.INTER_NEAREST)
-        self.draw_pygame_window(canvas, grid,
+        self.draw_pygame_window(canvas, gui_grid,
                                 position=(h_pad, 240+2*v_pad)
                                 )
-        #Painting MArkers and the fruits on the 
-        for i, fruit in enumerate(self.fruit_list):
-            if fruit == 'apple':
-                colour = red
-            elif fruit == 'lemon':
-                colour = yellow
-            elif fruit == 'orange':
-                colour = orange
-            elif fruit == 'strawberry':
-                colour = pink
-            elif fruit == 'pear':
-                colour = green
+        #Defining colours to use for the GUI
+        red = pygame.Color(255,0,0)
+        blue = pygame.Color(0,0,255)
+        green = pygame.Color(102,204,0)
+        yellow = pygame.Color(255,255,0)
+        black = pygame.Color(0,0,0)
+        orange = pygame.Color(255,165,0)
+        magenta = pygame.Color(255,0,255)
+        grey = pygame.Color(220,220,220)
+        purple = pygame.Colour(128,0,128)
 
-            x = int(self.fruit_true_pos[i][0]*80 + 120)
-            y = int(120 - self.fruit_true_pos[i][1]*80)
-            if fruit not in self.search_list:
-                pygame.draw.circle(canvas, grey, (h_pad + x,240 + 2*v_pad + y),self.radius*80)
-            else:
-                pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)
-            pygame.draw.circle(canvas, colour, (h_pad + x,240 + 2*v_pad + y),4)
-
+        #Painting Markers and the fruits on the 
         for marker in self.aruco_true_pos:
             x = int(marker[0]*80 + 120)
             y = int(120 - marker[1]*80)
-            pygame.draw.circle(canvas, grey, (h_pad + x,240 + 2*v_pad + y),self.radius*80)
+            pygame.draw.circle(canvas, purple, (h_pad + x,240 + 2*v_pad + y),self.boundary*80,0)
             pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
 
-        #Drawing robot
+        for i, fruit in enumerate(self.fruit_list):
+            match fruit:
+                case 'apple':
+                    colour = red
+                case 'lemon':
+                    colour = yellow
+                case'orange':
+                    colour = orange
+                case 'pear':
+                    colour = green
+                case 'strawberry':
+                    colour = magenta
+
+            x = int(self.fruit_true_pos[i][0]*80 + 120)
+            y = int(120 - self.fruit_true_pos[i][1]*80)
+            #Drawing the current fruit in the list
+            pygame.draw.circle(canvas, colour, (h_pad + x,240 + 2*v_pad + y),4)
+            if fruit not in self.search_list:
+                pygame.draw.circle(canvas, grey, (h_pad + x,240 + 2*v_pad + y),self.boundary*80)
+            else:
+                pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)
+            
+        #Painting the robot on the grid
         x = int(self.robot_pose[0]*80 + 120)
         y = int(120 - self.robot_pose[1]*80)
         x2 = int(x + 20*np.cos(self.robot_pose[2]))
         y2 = int(y - 20*np.sin(self.robot_pose[2]))
-        pygame.draw.rect(canvas, red, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
+        pygame.draw.rect(canvas, blue, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
         pygame.draw.line(canvas, black, (h_pad + x,240 + 2*v_pad + y),(h_pad + x2,240 + 2*v_pad + y2))
 
         #Draw waypoint
