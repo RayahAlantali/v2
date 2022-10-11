@@ -368,7 +368,7 @@ class Operate:
         grey = pygame.Color(220,220,220)
 
         # paint SLAM outputs
-        ekf_view = self.ekf.draw_slam_state(res=(320, 480+v_pad),
+        ekf_view = self.ekf.draw_slam_state(res=(240, 240+v_pad),
             not_pause = self.ekf_on)
         canvas.blit(ekf_view, (2*h_pad+320, v_pad))
         robot_view = cv2.resize(self.aruco_img, (320, 240))
@@ -385,7 +385,7 @@ class Operate:
 
         # Making a GUI for going from point to point
         grid = cv2.resize(self.grid,
-                                   (240, 240), cv2.INTER_NEAREST)
+                                   (320, 480), cv2.INTER_NEAREST)
         self.draw_pygame_window(canvas, grid,
                                 position=(h_pad, 240+2*v_pad)
                                 )
