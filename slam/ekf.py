@@ -27,9 +27,11 @@ class EKF:
         for i in range(1, 11):
             f_ = f'./pics/8bit/lm_{i}.png'
             self.lm_pics.append(pygame.image.load(f_))
+
         for fruit in ['apple','lemon','orange','pear','strawberry', 'unknown']: #0, 1, 2, 3, 4
             f_ = f'./pics/8bit/lm_{fruit}.png'
             self.lm_pics.append(pygame.image.load(f_))
+
         self.pibot_pic = pygame.image.load(f'./pics/8bit/pibot_top.png')
         self.pibot_pic = pygame.transform.flip(self.pibot_pic,True, False) #Flip image
 
@@ -61,6 +63,7 @@ class EKF:
 
     def load_map(self, marker_list, taglist, P):
         utils = MappingUtils(marker_list, P[3:,3:],taglist)
+        # utils.load(fname)
         self.taglist = utils.taglist
         self.markers = utils.markers
         self.P = P
@@ -95,24 +98,22 @@ class EKF:
     # the prediction step of EKF
     def predict(self, raw_drive_meas):
 
-        F = self.state_transition(raw_drive_meas)
-        x = self.get_state_vector()
+#         F = self.state_transition(raw_drive_meas)
+#         x = self.get_state_vector()
+
+        # TODO: add your codes here to compute the predicted x
+
+        # compute robot's state given the control input
         self.robot.drive(raw_drive_meas)
 
-        # TODO: add your codes here to compute the predicted drive
-        #Robot is going in a straight line
+        # Get A using state_transition() calculate Jacobian of dynamics
+        A = self.state_transition(raw_drive_meas)
+
+        # Get Q using predict_covariance() calculate covariance matrix for dynamics model
         Q = self.predict_covariance(raw_drive_meas)
 
-
-        self.P = F @ self.P @ F.T + Q
-        #if raw_drive_meas.left_speed==raw_drive_meas.right_speed:
-        #    self.P = F @ self.P @F.T +0.5*Q
-        if (np.absolute(x[0])<0.01 and np.absolute(x[1])<0.01):
-            self.P=self.P * 0.5
-        #Robot is turning hence more uncertainty
-        #else:
-        #0.5*Q
-        #self.P = self.P*0.5
+        # Update robot's uncertainty and update robot's state
+        self.P = A @ self.P @ A.T + Q
 
     # the update step of EKF
     def update(self, measurements):
@@ -138,13 +139,15 @@ class EKF:
 
         # TODO: add your codes here to compute the updated x
         #Compute Kalman Gain
-        S = H @ self.P @ H.T + R
+        S = H @ self.P @ H.T + R #+ 0.01*np.eye(R.shape[0])
         K = self.P @ H.T @ np.linalg.inv(S)
-        #Adjusting the state
+
+        #Correct state
         y = z - z_hat
         x = x + K @ y
-        #Setting state estimate and covariance
         self.set_state_vector(x)
+
+        #Correct covariance
         self.P = (np.eye(x.shape[0]) - K @ H) @ self.P
 
     def state_transition(self, raw_drive_meas):
