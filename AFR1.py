@@ -124,6 +124,10 @@ class Operate:
         self.control_clock = time.time()
         return drive_meas
     # camera control
+    def take_pic(self):
+        self.img = self.pibot.get_image()
+        if not self.data is None:
+            self.data.write_image(self.img)
 
     def detect_fruit_pos(self, dictionary):
         measurements = []
@@ -178,6 +182,17 @@ class Operate:
             self.file_output = (self.detector_output, self.ekf)
             # self.notification = f'{len(np.unique(self.detector_output))-1} target type(s) detected'
             self.notification = f'{pred_count} fruits detected'
+
+    # save raw images taken by the camera
+    def save_image(self):
+        f_ = os.path.join(self.folder, f'img_{self.image_id}.png')
+        if self.command['save_image']:
+            image = self.pibot.get_image()
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(f_, image)
+            self.image_id += 1
+            self.command['save_image'] = False
+            self.notification = f'{f_} is saved'
 
     # wheel and camera calibration for SLAM
     def init_ekf(self, datadir, ip):
