@@ -139,15 +139,13 @@ class EKF:
 
         # TODO: add your codes here to compute the updated x
         #Compute Kalman Gain
-        S = H @ self.P @ H.T + R #+ 0.01*np.eye(R.shape[0])
+        S = H @ self.P @ H.T + R 
         K = self.P @ H.T @ np.linalg.inv(S)
-
-        #Correct state
+        #Adjusting the state
         y = z - z_hat
         x = x + K @ y
+        #Setting state estimate and covariance
         self.set_state_vector(x)
-
-        #Correct covariance
         self.P = (np.eye(x.shape[0]) - K @ H) @ self.P
 
     def state_transition(self, raw_drive_meas):
@@ -233,8 +231,6 @@ class EKF:
     def to_im_coor(xy, res, m2pixel):
         w, h = res
         x, y = xy
-        # x_im = int(-x*m2pixel+w/2.0)
-        # y_im = int(y*m2pixel+h/2.0)
         x_im = int(x*m2pixel+w/2.0)
         y_im = int(-y*m2pixel+h/2.0)
         return (x_im, y_im)
