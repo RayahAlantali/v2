@@ -46,8 +46,7 @@ class Operate:
 
         # initialise SLAM parameters
         self.ekf = self.init_ekf(args.calib_dir, args.ip)
-        self.aruco_det = aruco.aruco_detector(
-            self.ekf.robot, marker_length = 0.07) # size of the ARUCO markers
+        self.aruco_det = aruco.aruco_detector(self.ekf.robot, marker_length = 0.07) # size of the ARUCO markers
 
         if args.save_data:
             self.data = dh.DatasetWriter('record')
@@ -217,12 +216,8 @@ class Operate:
 
     # SLAM with ARUCO markers
     def update_slam(self, drive_meas):
-        # self.detector_output, self.aruco_img, self.bounding_boxes, pred_count = self.detector.detect_single_image(self.img)
         lms, self.aruco_img = self.aruco_det.detect_marker_positions(self.img)
-        # from M4_pose_est_sim import estimate_fruit_pose
-        # fruit_dict = estimate_fruit_pose(self.bounding_boxes, self.robot_pose)
-        # lms_fruit = self.detect_fruit_pos(fruit_dict)
-        # lms = lms + lms_fruit
+
         if self.request_recover_robot:
             is_success = self.ekf.recover_from_pause(lms)
             if is_success:
@@ -243,7 +238,6 @@ class Operate:
             self.detector_output, self.network_vis, self.bounding_boxes, pred_count = self.detector.detect_single_image(self.img)
             self.command['inference'] = False
             self.file_output = (self.detector_output, self.ekf)
-            # self.notification = f'{len(np.unique(self.detector_output))-1} target type(s) detected'
             self.notification = f'{pred_count} fruits detected'
 
     # save raw images taken by the camera
@@ -498,51 +492,8 @@ class Operate:
             # stop
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.command['motion'] = [0, 0]
-            # save image
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
-                self.command['save_image'] = True
-            # save SLAM map
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-                self.command['output'] = True
-            # reset SLAM map
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                if self.double_reset_comfirm == 0:
-                    self.notification = 'Press again to confirm CLEAR MAP'
-                    self.double_reset_comfirm +=1
-                elif self.double_reset_comfirm == 1:
-                    self.notification = 'SLAM Map is cleared'
-                    self.double_reset_comfirm = 0
-                    self.ekf.reset()
-            # run SLAM
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                n_observed_markers = len(self.ekf.taglist)
-                if not self.ekf_on:
-                    self.notification = 'SLAM is running'
-                    self.ekf_on = True
-                # if n_observed_markers == 0:
-                #     if not self.ekf_on:
-                #         self.notification = 'SLAM is running'
-                #         self.ekf_on = True
-                #     else:
-                #         self.notification = '> 2 landmarks is required for pausing'
-                # elif n_observed_markers < 3:
-                #     self.notification = '> 2 landmarks is required for pausing'
-                # else:
-                #     if not self.ekf_on:
-                #         self.request_recover_robot = True
-                #     self.ekf_on = not self.ekf_on
-                #     if self.ekf_on:
-                #         self.notification = 'SLAM is running'
-                #     else:
-                #         self.notification = 'SLAM is paused'
-            # run object detector
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                self.command['inference'] = True
-            # save object detection outputs
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_n:
-                self.command['save_inference'] = True
-            # run auto fruit search
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_a:
+            # AFR
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_g:
                 self.path_idx = 0
                 self.point_idx = 1
                 self.waypoints = self.paths[self.path_idx] #set first path
@@ -558,12 +509,14 @@ class Operate:
             pygame.quit()
             sys.exit()
 
-
-    def turn_robot(self):
+    def drive_robot(self):
         waypoint_x = self.wp[0]
         waypoint_y = self.wp[1]
         robot_x = self.robot_pose[0]
         robot_y = self.robot_pose[1]
+
+        self.distance = np.sqrt((waypoint_x-robot_x)**2 + (waypoint_y-robot_y)**2) #calculates distance between robot and waypoint
+
         robot_theta = self.robot_pose[2]
         waypoint_angle = np.arctan2((waypoint_y-robot_y),(waypoint_x-robot_x))
         theta1 = robot_theta - waypoint_angle
@@ -580,8 +533,6 @@ class Operate:
         if self.forward == False:
             #Update turning tick speed depending on theta_error to waypoint
             self.turning_tick = int(abs(5 * self.theta_error) + 3)
-            # print(f"Turning tick {self.turning_tick} with {self.theta_error}")
-
             if self.theta_error > 0:
                 self.command['motion'] = [0,-1]
                 self.notification = 'Robot is turning right'
@@ -589,16 +540,6 @@ class Operate:
             if self.theta_error < 0:
                 self.command['motion'] = [0,1]
                 self.notification = 'Robot is turning left'
-
-    def drive_robot(self):
-        waypoint_x = self.wp[0]
-        waypoint_y = self.wp[1]
-        robot_x = self.robot_pose[0]
-        robot_y = self.robot_pose[1]
-
-        self.distance = np.sqrt((waypoint_x-robot_x)**2 + (waypoint_y-robot_y)**2) #calculates distance between robot and waypoint
-
-        self.turn_robot() # turn robot
 
         # stop turning if less than threshold
         if not self.forward:
@@ -612,7 +553,6 @@ class Operate:
         if self.forward:
             #Update tick speed depending on distance to waypoint
             self.tick = int(10 * self.distance  + 30)
-            # print(f"Driving tick {self.tick} with {self.distance}")
 
             #Checking if distance is increasing, stop driving
             if self.distance > self.min_dist + 0.1:
@@ -681,7 +621,6 @@ if __name__ == "__main__":
     TEXT_FONT = pygame.font.Font('pics/8-BitMadness.ttf', 40)
 
     width, height = 700, 660
-    # width, height = 700 + 400, 660
     canvas = pygame.display.set_mode((width, height))
     pygame.display.set_caption('ECE4078 2021 Lab')
     pygame.display.set_icon(pygame.image.load('pics/8bit/pibot5.png').convert())
