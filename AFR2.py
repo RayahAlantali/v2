@@ -390,7 +390,7 @@ class Operate:
         orange = pygame.Color(255,165,0)
         magenta = pygame.Color(255,0,255)
         grey = pygame.Color(220,220,220)
-        purple = pygame.Colour(128,0,128)
+        purple = pygame.Color(128,0,128)
 
         #Painting Markers and the fruits on the 
         for marker in self.aruco_true_pos:
