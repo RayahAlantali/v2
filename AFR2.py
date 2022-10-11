@@ -176,7 +176,7 @@ class Operate:
         #starting robot pose and empty paths
         start = np.array([0,0]) + 1.5
         paths = []
-        print(search_fruits)
+        print(self.fruit_list)
         for idx in search_fruits:
             location = copy.deepcopy(self.fruit_true_pos[idx])
             offset = 0.15
