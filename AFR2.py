@@ -379,7 +379,7 @@ class Operate:
         gui_grid = cv2.resize(self.grid,
                                    (320, 480), cv2.INTER_NEAREST)
         self.draw_pygame_window(canvas, gui_grid,
-                                position=(2*h_pad, v_pad)
+                                position=(2*h_pad+320, v_pad)
                                 )
         #Defining colours to use for the GUI
         red = pygame.Color(255,0,0)
