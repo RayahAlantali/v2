@@ -6,6 +6,7 @@ sys.path.insert(0, "../util")
 from pibot import PenguinPi
 
 
+
 def calibrateWheelRadius():
     # Compute the robot scale parameter using a range of wheel velocities.
     # For each wheel velocity, the robot scale parameter can be computed
@@ -34,18 +35,18 @@ def calibrateWheelRadius():
             uInput = input("Did the robot travel 1m?[y/N]")
             if uInput == 'y':
                 delta_times.append(delta_time)
-                print("Recording that the robot drove 1m in {:.2f} seconds at wheel speed {}.\n".format(delta_time, wheel_vel))
+                print("Recording that the robot drove 1m in {:.2f} seconds at wheel speed {}.\n".format(delta_time,
+                                                                                                        wheel_vel))
                 break
 
     # Once finished driving, compute the scale parameter by averaging
     num = len(wheel_velocities_range)
     scale = 0
     for delta_time, wheel_vel in zip(delta_times, wheel_velocities_range):
-         # TODO: replace with your code to compute the scale parameter using wheel_vel and delta_time
-        scale += 1/(wheel_vel*delta_time)
-    scale = scale/num #Average of all iterations
+        scale += 1/(delta_time * wheel_vel)# TODO: replace with your code to compute the scale parameter using wheel_vel and delta_time
+    scale /= num
     print("The scale parameter is estimated as {:.6f} m/ticks.".format(scale))
-    #scale = 4.568340137384011013e-03
+
     return scale
 
 
@@ -86,12 +87,12 @@ def calibrateBaseline(scale):
     num = len(wheel_velocities_range)
     baseline = 0
     for delta_time, wheel_vel in zip(delta_times, wheel_velocities_range):
-        # TODO: replace with your code to compute the baseline parameter using scale, wheel_vel, and delta_time
-        baseline += (wheel_vel*scale*delta_time/np.pi)
+        baseline += delta_time*scale*wheel_vel/np.pi # TODO: replace with your code to compute the baseline parameter using scale, wheel_vel, and delta_time
     baseline /= num
     print("The baseline parameter is estimated as {:.6f} m.".format(baseline))
-    #baseline = 1.728497052951421808e-01
+
     return baseline
+
 
 if __name__ == "__main__":
     import argparse
