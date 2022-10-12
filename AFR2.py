@@ -79,7 +79,7 @@ class Operate:
             self.detector = None
             self.network_vis = cv2.imread('pics/8bit/detector_splash.png')
         else:
-            # self.detector = Detector(args.ckpt, use_gpu=False)
+            self.detector = Detector(args.ckpt, use_gpu=False)
             self.network_vis = np.ones((240, 320,3))* 100
             self.grid = cv2.imread('grid.png')
         self.bg = pygame.image.load('pics/gui_mask.jpg')
@@ -194,15 +194,14 @@ class Operate:
             goal = np.array(location) + 1.5
 
 
-            rrtc = RRT(start=start, goal=goal, width=3, height=3, obstacle_list=all_obstacles,
+            rrt1 = RRT(start=start, goal=goal, width=3, height=3, obstacle_list=all_obstacles,
                     expand_dis=1, path_resolution=0.5)
-            path = rrtc.planning()[::-1] #reverse path
+            path = rrt1.planning()[::-1] #reverse path
 
             #printing path
             for i in range(len(path)):
                 x, y = path[i]
                 path[i] = [x - 1.5, y - 1.5]
-            # print(f'The path is {path}')
 
             #adding paths
             paths.append(path)
@@ -481,6 +480,33 @@ class Operate:
             # stop
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.command['motion'] = [0, 0]
+            # save image
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                self.command['save_image'] = True
+            # save SLAM map
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+                self.command['output'] = True
+            # reset SLAM map
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                if self.double_reset_comfirm == 0:
+                    self.notification = 'Press again to confirm CLEAR MAP'
+                    self.double_reset_comfirm +=1
+                elif self.double_reset_comfirm == 1:
+                    self.notification = 'SLAM Map is cleared'
+                    self.double_reset_comfirm = 0
+                    self.ekf.reset()
+            # run SLAM
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                n_observed_markers = len(self.ekf.taglist)
+                if not self.ekf_on:
+                    self.notification = 'SLAM is running'
+                    self.ekf_on = True
+            # run object detector
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                self.command['inference'] = True
+            # save object detection outputs
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_n:
+                self.command['save_inference'] = True
             # AFR
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_g:
                 self.path_idx = 0
