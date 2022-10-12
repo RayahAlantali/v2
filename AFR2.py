@@ -353,19 +353,16 @@ class Operate:
         v_pad = 40
         h_pad = 20
  
-        # paint SLAM outputs
-        ekf_view = self.ekf.draw_slam_state(res=(240, 240+v_pad),
-            not_pause = self.ekf_on)
-        canvas.blit(ekf_view, (h_pad,2*v_pad+240))
+        # EKF show
+        ekf_view = self.ekf.draw_slam_state(res=(320, 480+v_pad),not_pause = self.ekf_on)
+        canvas.blit(ekf_view, (2*h_pad+320, v_pad))
         robot_view = cv2.resize(self.aruco_img, (320, 240))
-        self.draw_pygame_window(canvas, robot_view,
-                                position=(h_pad, v_pad))
+        self.draw_pygame_window(canvas, robot_view,position=(h_pad, v_pad))
 
-        # Using a grid image as the interface for waypoints
-        gui_grid = cv2.resize(self.grid,
-                                   (320, 480), cv2.INTER_NEAREST)
-        self.draw_pygame_window(canvas, gui_grid,
-                                position=(2*h_pad+320, v_pad))
+        # display grid
+        grid = cv2.resize(self.grid,(240, 240), cv2.INTER_NEAREST)
+        self.draw_pygame_window(canvas, grid,position=(h_pad, 240+2*v_pad))
+       
         #Defining colours to use for the GUI
         black = pygame.Color(0,0,0)
         red = pygame.Color(255,0,0)
@@ -379,10 +376,11 @@ class Operate:
 
         #Painting Marker positions on the grid
         for marker in self.aruco_true_pos:
-            x = int(160+marker[0]*80 )
-            y = int(160 - marker[1]*80)
-            pygame.draw.circle(canvas, purple, (2*h_pad+320 + x,v_pad + y),self.boundary*80,0)
-            pygame.draw.rect(canvas, black, (2*h_pad+320 + x - 5,v_pad + y - 5,10,10))
+            x = int(marker[0]*80 + 120)
+            y = int(120 - marker[1]*80)
+            pygame.draw.circle(canvas, purple, (h_pad + x,240 + 2*v_pad + y),self.boundary*80,0)
+            pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
+
         #Painting the fruits on the grid
         for i, fruit in enumerate(self.fruit_list):
             if fruit == 'apple':
@@ -396,28 +394,29 @@ class Operate:
             elif fruit == 'strawberry':
                 colour = magenta
 
-            x = int(160+self.fruit_true_pos[i][0]*80)
-            y = int(240 - self.fruit_true_pos[i][1]*80)
-            #Drawing the current fruit in the list
-            pygame.draw.circle(canvas, colour, (2*h_pad+320 + x,v_pad + y),4)
+            x = int(self.fruit_true_pos[i][0]*80 + 120)
+            y = int(120 - self.fruit_true_pos[i][1]*80)
+            #Drawing the fruit on the grid
+            pygame.draw.circle(canvas, colour, (h_pad + x,240 + 2*v_pad + y),4)
             if fruit not in self.search_list:
-                pygame.draw.circle(canvas, grey, (2*h_pad+320 + x,v_pad + y),self.boundary*80)
+                pygame.draw.circle(canvas, blue, (h_pad + x,240 + 2*v_pad + y),self.boundary*80)
             else:
-                pygame.draw.circle(canvas, black, (2*h_pad+320 + x,v_pad + y),0.5*80, 2)
+                pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)
+            
             
         #Painting the robot on the grid
         x = int(self.robot_pose[0]*80 + 120)
         y = int(120 - self.robot_pose[1]*80)
         x2 = int(x + 20*np.cos(self.robot_pose[2]))
         y2 = int(y - 20*np.sin(self.robot_pose[2]))
-        pygame.draw.rect(canvas, blue, (2*h_pad+320 + x - 5,v_pad + y - 5,10,10))
-        pygame.draw.line(canvas, black, (2*h_pad+320 + x,240 + 2*v_pad + y),(2*h_pad +320+ x2,v_pad + y2))
+        pygame.draw.rect(canvas, blue, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
+        pygame.draw.line(canvas, black, (h_pad + x,240 + 2*v_pad + y),(h_pad + x2,240 + 2*v_pad + y2))
 
         #Draw the waypoint
         x = int(self.wp[0]*80 + 120)
         y = int(120 - self.wp[1]*80)
-        pygame.draw.line(canvas, red,(2*h_pad+320 + x-5,v_pad + y-5), (2*h_pad+320 + x + 5,v_pad + y + 5))
-        pygame.draw.line(canvas, red,(2*h_pad+320 + x+ 5,v_pad + y-5), (2*h_pad+320 + x - 5,v_pad + y + 5))
+        pygame.draw.line(canvas, red,(h_pad + x-5,240 + 2*v_pad + y-5), (h_pad + x + 5,240 + 2*v_pad + y + 5))
+        pygame.draw.line(canvas, red,(h_pad + x + 5,240 + 2*v_pad + y-5), (h_pad + x - 5,240 + 2*v_pad + y + 5))
 
         #Draw path
         for path in self.paths:

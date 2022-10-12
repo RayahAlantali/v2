@@ -347,7 +347,7 @@ class Operate:
                 pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)
             pygame.draw.circle(canvas, colour, (h_pad + x,240 + 2*v_pad + y),4)
 
-        #Display robot
+        #Painting the robot on the grid
         x = int(self.robot_pose[0]*80 + 120)
         y = int(120 - self.robot_pose[1]*80)
         x2 = int(x + 20*np.cos(self.robot_pose[2]))
@@ -355,7 +355,7 @@ class Operate:
         pygame.draw.rect(canvas, red, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
         pygame.draw.line(canvas, black, (h_pad + x,240 + 2*v_pad + y),(h_pad + x2,240 + 2*v_pad + y2))
 
-        #Display waypoint
+        #Draw the waypoint
         x = int(self.wp[0]*80 + 120)
         y = int(120 - self.wp[1]*80)
         pygame.draw.line(canvas, red,(h_pad + x-5,240 + 2*v_pad + y-5), (h_pad + x + 5,240 + 2*v_pad + y + 5))
