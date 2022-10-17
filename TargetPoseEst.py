@@ -280,7 +280,7 @@ if __name__ == "__main__":
     
     # a dictionary of all the saved detector outputs
     image_poses = {}
-    with open(base_dir/'lab_output/images.txt') as fp:
+    with open(base_dir/'fruit_estimates/images.txt') as fp:
         for line in fp.readlines():
             pose_dict = ast.literal_eval(line)
             image_poses[pose_dict['imgfname']] = pose_dict['pose']

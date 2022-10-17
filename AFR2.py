@@ -631,6 +631,8 @@ if __name__ == "__main__":
     parser.add_argument("--true_map", default="M4_true_map_3fruits.txt")
     parser.add_argument("--ckpt", default='yolo-sim.pt')
     args, _ = parser.parse_known_args()
+    #Changes I've made 
+    parser.add_argument("--slam_map", default="slam_map.txt")
 
     pygame.font.init()
     TITLE_FONT = pygame.font.Font('pics/8-BitMadness.ttf', 35)
