@@ -296,7 +296,7 @@ if __name__ == "__main__":
     target_est = merge_estimations(target_map)
                      
     # save target pose estimations
-    with open(base_dir/'lab_output/targets.txt', 'w') as fo:
+    with open(base_dir/'fuit_estimates/targets.txt', 'w') as fo:
         json.dump(target_est, fo)
     
     print('Estimations saved')

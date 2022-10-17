@@ -113,7 +113,8 @@ class EKF:
         #Robot is turning hence more uncertainty
         #else:
         #0.5*Q
-        #self.P = self.P*0.5
+        #Relying less on the robots measurements and on the dynamic model
+        self.P = self.P*0.65
 
     # the update step of EKF
     def update(self, measurements):
