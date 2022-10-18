@@ -34,9 +34,9 @@ def get_image_info(base_dir, file_path, image_poses):
     completed_img_dict = {}
 
     # add the bounding box info of each target in each image
-    # target labels: 1 = apple, 2 = lemon, 3 = pear, 4 = orange, 5 = strawberry, 0 = not_a_target
+    # target labels: 1 = apple, 2 = lemon, 3 = pear, 4 = orange, 5 = strawberry
     img_file_path = os.path.join(base_dir, file_path)
-    model.conf = 0.2
+                                               
 
     result = model(img_file_path)
     image_data = result.pandas().xyxy[0]
