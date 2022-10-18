@@ -854,7 +854,7 @@ if __name__ == "__main__":
     parser.add_argument("--save_data", action='store_true')
     parser.add_argument("--play_data", action='store_true')
     parser.add_argument("--ckpt", default='network/scripts/model/best.pt')
-    parser.add_argument("--slam_map", default="frut_estimates/slam_map.txt")
+    parser.add_argument("--slam_map", default="fruit_estimates/slam_map.txt")
     parser.add_argument("--fruit_poses", default="fruit_estimates/targets.txt")
     args, _ = parser.parse_known_args()
     #Loading the model path
