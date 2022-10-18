@@ -141,7 +141,6 @@ class Operate:
     # SLAM with ARUCO markers       
     def update_slam(self, drive_meas):
         #Get the posititins of the fruits
-
         lms, self.aruco_img = self.aruco_det.detect_marker_positions(self.img)
         if self.request_recover_robot:
             is_success = self.ekf.recover_from_pause(lms)
@@ -441,6 +440,14 @@ class Operate:
 
     # save SLAM map
     def record_data(self):
+        # merge the estimations of the targets so that there are at most 3 estimations of each target type
+        target_map = self.estimate_pose()
+        target_est = self.merge_estimations(target_map)
+        base_dir = Path('./')           
+        # save target pose estimations
+        with open(base_dir/'fruit_estimates/targets.txt', 'w') as fo:
+            json.dump(target_est, fo)
+        self.notification = 'Estimations saved'
         if self.command['output']:
             self.output.write_map(self.ekf)
             self.notification = 'Map is saved'
@@ -456,14 +463,6 @@ class Operate:
                 self.notification = f'No prediction in buffer, save ignored'
             self.command['save_inference'] = False
             #Writing the bounding boxes and pose to a file
-        # merge the estimations of the targets so that there are at most 3 estimations of each target type
-        target_map = self.estimate_pose()
-        target_est = self.merge_estimations(target_map)
-        base_dir = Path('./')           
-        # save target pose estimations
-        with open(base_dir/'fruit_estimates/targets.txt', 'w') as fo:
-            json.dump(target_est, fo)
-        self.notification = 'Estimations saved'
 
         
     # paint the GUI
