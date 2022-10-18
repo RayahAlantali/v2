@@ -119,7 +119,7 @@ class OutputWriter:
     def write_map(self, slam):
         map_dict = {"taglist":slam.taglist,
                     "map":slam.markers.tolist(),
-                    "covariance":slam.P[3:,3:].tolist()}
+                    "covariance":int(slam.P[3:,3:].tolist())}
         print(map_dict)
         with open(self.map_f, 'w') as map_f:
             print(map_f)
