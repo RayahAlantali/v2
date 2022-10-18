@@ -121,7 +121,7 @@ class OutputWriter:
                     "map":slam.markers.tolist(),
                     "covariance":slam.P[3:,3:].tolist()}
         with open(self.map_f, 'w') as map_f:
-            json.dump(map_dict, np.int(map_f), indent=2)
+            json.dump(map_dict, map_f, indent=2)
             
     def write_image(self, image, slam):
         img_fname = "{}pred_{}.png".format(self.folder, self.image_count)
