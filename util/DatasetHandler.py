@@ -122,6 +122,13 @@ class OutputWriter:
                     "covariance":slam.P[3:,3:].tolist()}
         with open(self.map_f, 'w') as map_f:
             json.dump(map_dict, map_f, indent=2)
+
+    def write_slam_map(self, slam):
+        map_dict = {"aruco10_0":
+                    {"y":slam.markers[0][0],
+                    "x":slam.markers[0][1]}} #"aruco",str(slam.taglist[0]),"_0"
+        with open(self.map_f, 'w') as map_f:
+            json.dump(map_dict, map_f, indent=2)
             
     def write_image(self, image, slam):
         img_fname = "{}pred_{}.png".format(self.folder, self.image_count)
