@@ -459,7 +459,7 @@ class Operate:
         target_est = self.merge_estimations(target_map)
         base_dir = Path('./')           
         # save target pose estimations
-        with open(base_dir/'fuit_estimates/targets.txt', 'w') as fo:
+        with open(base_dir/'fruit_estimates/targets.txt', 'w') as fo:
             json.dump(target_est, fo)
         self.notification = 'Estimations saved'
         #Add known markers and fruits from map to SLAM
