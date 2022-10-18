@@ -210,8 +210,11 @@ class Operate:
 
     # SLAM with ARUCO markers
     def update_slam(self, drive_meas):
+        self.detector_output, self.aruco_img, self.bounding_boxes, pred_count = self.detector.detect_single_image(self.img)
         lms, self.aruco_img = self.aruco_det.detect_marker_positions(self.img)
-
+        fruit_dict = estimate_fruit_pose(self.bounding_boxes, self.robot_pose)
+        lms_fruit = self.detect_fruit_pos(fruit_dict)
+        lms = lms + lms_fruit
         if self.request_recover_robot:
             is_success = self.ekf.recover_from_pause(lms)
             if is_success:
