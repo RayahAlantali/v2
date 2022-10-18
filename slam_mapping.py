@@ -134,7 +134,7 @@ class Operate:
     # save SLAM map
     def record_data(self):
         if self.command['output']:
-            self.output.write_map(self.ekf)
+            self.output.write_map(int(self.ekf))
             self.notification = 'Map is saved'
             self.command['output'] = False
 
