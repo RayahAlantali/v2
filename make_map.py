@@ -1,6 +1,7 @@
 # teleoperate the robot and perform SLAM
 
 # basic python packages
+from pickle import FALSE, TRUE
 import numpy as np
 import cv2 
 import os, sys
@@ -106,7 +107,8 @@ class Operate:
         self.completed_img_dict = {}
         self.dict_idx = 0
         self.tagret_pose_dict ={}
-
+        #Setting a condition for slam to map
+        self.SLAM_DONE =FALSE
 
         #Creating paths from the know search_liat
         self.search_list = self.read_search_list()
@@ -437,6 +439,7 @@ class Operate:
         if self.command['output']:
             self.output.write_map(self.ekf)
             self.notification = 'Map is saved'
+            self.SLAM_DONE = TRUE
             self.command['output'] = False
         # save inference with the matching robot pose and detector labels
         if self.command['save_inference']:
@@ -457,7 +460,7 @@ class Operate:
         with open(base_dir/'fuit_estimates/targets.txt', 'w') as fo:
             json.dump(target_est, fo)
         self.notification = 'Estimations saved'
-                #Add known markers and fruits from map to SLAM
+        #Add known markers and fruits from map to SLAM
         self.fruit_list, self.fruit_true_pos, self.aruco_true_pos = self.read_true_map(args.slam_map)
         self.marker_pos = np.zeros((2,len(self.aruco_true_pos) + len(self.fruit_true_pos)))
         self.marker_pos, self.taglist, self.P = self.parse_slam_map(self.fruit_list, self.fruit_true_pos, self.aruco_true_pos)
@@ -501,6 +504,7 @@ class Operate:
             return fruit_list, fruit_true_pos, aruco_true_pos
 
     def generate_paths(self):
+        if self.SLAM_DONE:
             #getting index of fruits to be searched
             fruit_list_dict = dict(zip(self.fruit_list,range(len(self.fruit_list))))
             all_fruits = [x for x in range(len(self.fruit_list))]
@@ -553,6 +557,8 @@ class Operate:
                 paths.append(path)
                 start = np.array(goal)
             self.paths = paths
+        else:
+            self.notification = "SLAM has not been completed"
 
     def read_search_list(self):
         """Read the search order of the target fruits
