@@ -91,7 +91,9 @@ class Operate:
         self.marker_pos = np.zeros((2,10))
         self.lmc = 1e-6
         self.path_idx = 0
-
+        self.fruit_list = []
+        self.fruit_true_pos = []
+        self.aruco_true_pos = np.empty([10, 2])
         #Contorl and travel parameters
         self.tick = 20
         self.turning_tick = 5
