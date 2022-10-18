@@ -113,9 +113,9 @@ class Operate:
         self.SLAM_DONE =FALSE
 
         #Creating paths from the know search_liat
-        self.search_list = self.read_search_list()
-        print(f'Fruit search order: {self.search_list}')
-        self.generate_paths()
+        #self.search_list = self.read_search_list()
+        #print(f'Fruit search order: {self.search_list}')
+        #self.generate_paths()
 
     # wheel control
     def control(self):       

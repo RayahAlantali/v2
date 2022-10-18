@@ -122,6 +122,7 @@ class OutputWriter:
                     "covariance":slam.P[3:,3:].tolist()}
         print(map_dict)
         with open(self.map_f, 'w') as map_f:
+            print(map_f)
             json.dump(map_dict, map_f, indent=2)
             
     def write_image(self, image, slam):
