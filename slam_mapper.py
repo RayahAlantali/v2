@@ -613,6 +613,20 @@ class Operate:
             # save SLAM map
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 self.command['output'] = True
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                self.command['inference'] = True
+            # save object detection outputs
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_n:
+                self.command['save_inference'] = True
+            # AFR
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+                self.path_idx = 0
+                self.point_idx = 1
+                self.waypoints = self.paths[self.path_idx] #set first path
+                self.wp = self.waypoints[self.point_idx] #set waypoint to second point in path
+                self.auto_path = True
+                print(f"Moving to new waypoint {self.wp}")
+            # quit
             # reset SLAM map
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
                 if self.double_reset_comfirm == 0:
