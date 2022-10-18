@@ -211,6 +211,7 @@ class Operate:
 
     # SLAM with ARUCO markers
     def update_slam(self, drive_meas):
+        # Charlie
         self.detector_output, self.aruco_img, self.bounding_boxes, pred_count = self.detector.detect_single_image(self.img)
         lms, self.aruco_img = self.aruco_det.detect_marker_positions(self.img)
         fruit_dict = estimate_fruit_pose(self.bounding_boxes, self.robot_pose)
@@ -367,6 +368,13 @@ class Operate:
         grid = cv2.resize(self.grid,(240, 240), cv2.INTER_NEAREST)
         self.draw_pygame_window(canvas, grid,position=(h_pad, 240+2*v_pad))
        
+       # detector - ChARLIE
+        detector_view = cv2.resize(self.network_vis,
+                                    (320, 240), cv2.INTER_NEAREST)
+        self.draw_pygame_window(canvas, detector_view,
+                                position=(3*h_pad + 2*320, v_pad)
+                                )
+
         #Defining colours to use for the GUI
         black = pygame.Color(0,0,0)
         red = pygame.Color(255,0,0)
