@@ -465,8 +465,8 @@ class Operate:
         #Add known markers and fruits from map to SLAM
         #self.fruit_list, self.fruit_true_pos, self.aruco_true_pos = self.read_true_map(args.slam_map)
         #self.marker_pos = np.zeros((2,len(self.aruco_true_pos) + len(self.fruit_true_pos)))
-        self.marker_pos, self.taglist, self.P = self.parse_slam_map(self.fruit_list, self.fruit_true_pos, self.aruco_true_pos)
-        self.ekf.load_map(self.marker_pos, self.taglist, self.P)
+        #self.marker_pos, self.taglist, self.P = self.parse_slam_map(self.fruit_list, self.fruit_true_pos, self.aruco_true_pos)
+        #self.ekf.load_map(self.marker_pos, self.taglist, self.P)
         
     def read_true_map(self,fname):
         """Read the ground truth map and output the pose of the ArUco markers and 3 types of target fruit to search
