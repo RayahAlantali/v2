@@ -111,11 +111,6 @@ class Operate:
         #Setting a condition for slam to map
         self.SLAM_DONE =FALSE
 
-        #Creating paths from the know search_liat
-        self.search_list = self.read_search_list()
-        print(f'Fruit search order: {self.search_list}')
-        self.generate_paths()
-
     # wheel control
     def control(self):       
         if args.play_data:
@@ -138,7 +133,7 @@ class Operate:
     # SLAM with ARUCO markers       
     def update_slam(self, drive_meas):
         #Get the posititins of the fruits
-        
+
         lms, self.aruco_img = self.aruco_det.detect_marker_positions(self.img)
         if self.request_recover_robot:
             is_success = self.ekf.recover_from_pause(lms)
@@ -463,18 +458,6 @@ class Operate:
         self.notification = 'Estimations saved'
 
         
-    def read_search_list(self):
-        """Read the search order of the target fruits
-        @return: search order of the target fruits
-        """
-        search_list = []
-        with open('search_list.txt', 'r') as fd:
-            fruits = fd.readlines()
-
-            for fruit in fruits:
-                search_list.append(fruit.strip())
-
-        return search_list
     # paint the GUI
     def draw(self, canvas):
         canvas.blit(self.bg, (0, 0))
@@ -510,7 +493,7 @@ class Operate:
             pygame.draw.circle(canvas, purple, (h_pad + x,240 + 2*v_pad + y),self.boundary*80,0)
             pygame.draw.rect(canvas, black, (h_pad + x - 5,240 + 2*v_pad + y - 5,10,10))
 
-        #Painting the fruits on the grid
+        '''#Painting the fruits on the grid
         for i, fruit in enumerate(self.fruit_list):
             if fruit == 'apple':
                 colour = red
@@ -530,7 +513,7 @@ class Operate:
             if fruit not in self.search_list:
                 pygame.draw.circle(canvas, blue, (h_pad + x,240 + 2*v_pad + y),self.boundary*80)
             else:
-                pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)
+                pygame.draw.circle(canvas, black, (h_pad + x,240 + 2*v_pad + y),0.5*80, 2)'''
             
             
         #Painting the robot on the grid
