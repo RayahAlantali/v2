@@ -116,6 +116,60 @@ class Operate:
         print(f'Fruit search order: {self.search_list}')
         self.generate_paths()
 
+    def generate_paths(self):
+        #getting index of fruits to be searched
+        fruit_list_dict = dict(zip(self.fruit_list,range(len(self.fruit_list))))
+        all_fruits = [x for x in range(len(self.fruit_list))]
+        search_fruits = [fruit_list_dict[x] for x in self.search_list]
+        other_fruits = list((set(all_fruits) | set(search_fruits)) - (set(all_fruits) & set(search_fruits)))
+
+        #Putting in the Markers
+        obstacles = []
+        for x,y in self.aruco_true_pos:
+            obstacles.append([x + 1.5, y + 1.5])
+
+        #Making the other fruits obstacles
+        for idx in other_fruits:
+            x,y = self.fruit_true_pos[idx]
+            obstacles.append([x + 1.5, y + 1.5])
+
+        all_obstacles = generate_path_obstacles(obstacles, self.boundary) #generating obstacles
+
+        #starting robot pose and empty paths
+        start = np.array([0,0]) + 1.5
+        paths = []
+        print(self.fruit_true_pos)
+        for idx in search_fruits:
+            location = copy.deepcopy(self.fruit_true_pos[idx])
+            offset = 0.15
+            #Stop in front of fruit
+            if location[0] > 0 and location[1] > 0:
+                location -= [offset, offset]
+            elif location[0] > 0 and location[1] < 0:
+                location -= [offset, -offset]
+            elif location[0] < 0 and location[1] > 0:
+                location -= [-offset, offset]
+            else:
+                location += [offset, offset]
+
+            print(f' {self.fruit_list[idx]} at {location}')
+            goal = np.array(location) + 1.5
+
+
+            rrt1 = RRT(start=start, goal=goal, width=3, height=3, obstacle_list=all_obstacles,
+                    expand_dis=1, path_resolution=0.5)
+            path = rrt1.planning()[::-1] #reverse path
+
+            #printing path
+            for i in range(len(path)):
+                x, y = path[i]
+                path[i] = [x - 1.5, y - 1.5]
+
+            #adding paths
+            paths.append(path)
+            start = np.array(goal)
+        self.paths = paths
+        
     # wheel control
     def control(self):       
         if args.play_data:
