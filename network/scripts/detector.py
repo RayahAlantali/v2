@@ -48,10 +48,15 @@ class Detector:
             pred_results[i,:] = np.array([predic_class,xl,xu,yl,yu])
             #Writing the bounding boxes to a text file 
             stored_result = np.array([predic_class,probability,xl,xu,yl,yu])
-        #Save all the predictions to a file with the boxes
+
+        ## The edited part : 
         image_data = pred.pandas().xyxy[0]
-        with open('fruit_estimates/targets.txt', 'a') as fo:
-            json.dump(image_data, fo)
-        return np.squeeze(pred.render()),np.squeeze(pred.render()),pred_results
-
-
+        with open('fruit_estimates/targets.txt', "a") as txt_file:
+            for line in image_data:
+                txt_file.write(" ".join(line) + "\n") 
+        
+        #Save all the predictions to a file with the boxes
+        
+        #with open('fruit_estimates/targets.txt', 'a') as fo:
+        #   json.dump(image_data, fo)
+        return np.squeeze(pred.render()),np.squeeze(pred.render()),pred_results 
