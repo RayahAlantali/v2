@@ -613,7 +613,7 @@ class Operate:
             # save SLAM map
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 self.command['output'] = True
-                   elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 self.command['inference'] = True
             # save object detection outputs
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_n:
