@@ -108,6 +108,8 @@ class Operate:
         self.completed_img_dict = {}
         self.dict_idx = 0
         self.tagret_pose_dict ={}
+        self.grid = cv2.imread('grid.png')
+
         #Setting a condition for slam to map
         self.SLAM_DONE =FALSE
 
