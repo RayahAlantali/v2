@@ -8,6 +8,7 @@ import torch
 #from args import args
 #from res18_skip import Resnet18Skip
 import cv2
+import json
 
 class Detector:
     def __init__(self, ckpt, use_gpu=False):
@@ -50,7 +51,8 @@ class Detector:
         #Save all the predictions to a file with the boxes
         image_data = pred.pandas().xyxy[0]
         np.savetxt(file_result,str(image_data))
-        print(image_data)
+        with open('fuit_estimates/targets.txt', 'a') as fo:
+            json.dump(image_data, fo)
         return np.squeeze(pred.render()),np.squeeze(pred.render()),pred_results
 
 
