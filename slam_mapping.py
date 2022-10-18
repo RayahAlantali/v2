@@ -190,26 +190,20 @@ class Operate:
 
     # keyboard teleoperation        
     def update_keyboard(self):
-
-        relative_speed = 1
         for event in pygame.event.get():
             ########### replace with your M1 codes ###########
             # drive forward
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                self.command['motion'] = [relative_speed, 0]
+                pass # TODO: replace with your M1 code to make the robot drive forward
             # drive backward
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                self.command['motion'] = [-relative_speed, 0]            
+                pass # TODO: replace with your M1 code to make the robot drive backward
             # turn left
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                self.command['motion'] = [0, relative_speed] #[1,1] for wide arc
+                pass # TODO: replace with your M1 code to make the robot turn left
             # drive right
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                self.command['motion'] = [0, -relative_speed] #[1,-1] for wide arc
-            # Optional:
-            # stop (if no key pressed)
-            elif event.type == pygame.KEYUP and (event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]):
-                self.command['motion'] = [0, 0]
+                pass # TODO: replace with your M1 code to make the robot turn right
             ####################################################
             # stop
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
