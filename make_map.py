@@ -588,8 +588,8 @@ class Operate:
         self.draw_pygame_window(canvas, robot_view,position=(h_pad, v_pad))
 
         # display grid
-        grid = cv2.resize(self.grid,(240, 240), cv2.INTER_NEAREST)
-        self.draw_pygame_window(canvas, grid,position=(h_pad, 240+2*v_pad))
+        #grid = cv2.resize(self.grid,(240, 240), cv2.INTER_NEAREST)
+        #self.draw_pygame_window(canvas, grid,position=(h_pad, 240+2*v_pad))
        
         #Defining colours to use for the GUI
         black = pygame.Color(0,0,0)
