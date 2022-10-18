@@ -215,7 +215,7 @@ class Operate:
     # save SLAM map
     def record_data(self):
         if self.command['output']:
-            self.output.write_map(self.ekf)
+            self.output.write_slam_map(self.ekf)
             self.notification = 'Map is saved'
             self.command['output'] = False
         # save inference with the matching robot pose and detector labels
@@ -523,7 +523,7 @@ if __name__ == "__main__":
     parser.add_argument("--calib_dir", type=str, default="calibration/param/")
     parser.add_argument("--save_data", action='store_true')
     parser.add_argument("--play_data", action='store_true')
-    parser.add_argument("--true_map", default="lab_output/slam_map.txt")
+    parser.add_argument("--true_map", default="lab_output/slam.txt")
     parser.add_argument("--ckpt", default='yolo-sim.pt')
     args, _ = parser.parse_known_args()
 
